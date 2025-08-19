@@ -1,13 +1,25 @@
 -- V1__init_extensions.sql
 
 -- 1) pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE
+EXTENSION IF NOT EXISTS vector;
 
 -- 2) product embeddings table (keep separate from JPA entities)
-CREATE TABLE IF NOT EXISTS product_embedding (
-                                                 product_id UUID PRIMARY KEY
-                                                 REFERENCES products(id) ON DELETE CASCADE,
-    embedding  vector(1536)
+CREATE TABLE IF NOT EXISTS product_embedding
+(
+    product_id
+    UUID
+    PRIMARY
+    KEY
+    REFERENCES
+    products
+(
+    id
+) ON DELETE CASCADE,
+    embedding vector
+(
+    1536
+)
     );
 
 -- 3) ANN index for cosine similarity

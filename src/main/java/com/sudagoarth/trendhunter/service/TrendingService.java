@@ -34,7 +34,7 @@ public class TrendingService {
 
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("productId", p.getId());
-            row.put("title", Optional.ofNullable(p.getTitleNorm()).orElse(p.getTitleRaw()));
+            row.put("title", Optional.ofNullable(p.getTitleNormalized()).orElse(p.getTitleRaw()));
             row.put("brand", p.getBrand());
             row.put("category", p.getCategory());
             row.put("cheapestPrice", min);

@@ -1,7 +1,12 @@
 server:
   port: 8080
-
+app:
+  ingestion:
+    enabled: true
 spring:
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/trendhunter
@@ -11,7 +16,13 @@ spring:
     hibernate:
       ddl-auto: validate   # do not auto-create/alter tables while we baseline
     show-sql: true
-
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -28,3 +39,5 @@ security:
 
 openai:
   api-key: ${OPENAI_API_KEY:}   # reads env var if set, otherwise empty
+ai:
+  provider: mock

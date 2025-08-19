@@ -1,0 +1,12 @@
+-- -- V5__embedding_768.sql
+-- DROP INDEX IF EXISTS product_embedding_idx;
+-- DROP TABLE IF EXISTS product_embedding;
+--
+-- CREATE TABLE product_embedding (
+--                                    product_id UUID PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+--                                    embedding  vector(768)
+-- );
+--
+-- -- choose your ops (l2/cosine/ip) to match query code
+-- CREATE INDEX product_embedding_idx
+--     ON product_embedding USING ivfflat (embedding vector_l2_ops) WITH (lists = 100);

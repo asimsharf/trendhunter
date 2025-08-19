@@ -12,7 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Service
-@ConditionalOnProperty(prefix = "openai", name = "api-key")
+@ConditionalOnProperty(prefix = "ai", name = "provider", havingValue = "openai")
 public class OpenAIService {
 
     @Value("${openai.api-key:}")

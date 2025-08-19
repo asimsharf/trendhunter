@@ -3,6 +3,7 @@ package com.sudagoarth.trendhunter.service;
 import com.sudagoarth.trendhunter.entity.Product;
 import com.sudagoarth.trendhunter.repository.EmbeddingRepository;
 import com.sudagoarth.trendhunter.repository.ProductRepository;
+import com.sudagoarth.trendhunter.service.dto.SimilarProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,25 +13,50 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SimilarityService {
-  private final OpenAIService openAI;
-  private final EmbeddingRepository embeddings;
-  private final ProductRepository products;
+    private final OpenAIService openAI;
+    private final EmbeddingRepository embeddings;
+    private final ProductRepository products;
 
-  public void indexProduct(Product p) {
-    if (!openAI.isConfigured()) return;
-    String text = (p.getBrand() + " " + p.getModel() + " " + 
-                  Optional.ofNullable(p.getTitleNorm()).orElse(p.getTitleRaw()))
-                  .trim();
-    float[] v = openAI.embedText(text);
-    embeddings.upsert(p.getId(), v);
-  }
+    public void indexProduct(Product p) {
+        if (!openAI.isConfigured() || p == null) return;
+        String text = String.join(" ",
+                Optional.ofNullable(p.getBrand()).orElse(""),
+                Optional.ofNullable(p.getTitleNormalized()).orElse(p.getTitleRaw()),
+                Optional.ofNullable(p.getCategory()).orElse("")
+        ).trim();
+        if (text.isEmpty()) text = p.getTitleRaw();
+        float[] v = openAI.embedText(text);
+        embeddings.upsert(p.getId(), v);
+    }
 
-  public List<Product> similarToText(String text, int limit) {
-    if (!openAI.isConfigured()) return List.of();
-    float[] q = openAI.embedText(text);
-    List<UUID> ids = embeddings.similar(q, limit);
-    Map<UUID, Product> byId = products.findAllById(ids).stream()
-        .collect(Collectors.toMap(Product::getId, p -> p));
-    return ids.stream().map(byId::get).filter(Objects::nonNull).toList();
-  }
+    public List<Product> similarToText(String text, int limit) {
+        if (!openAI.isConfigured()) return List.of();
+        float[] q = openAI.embedText(text);
+        List<UUID> ids = embeddings.similar(q, Math.max(1, limit));
+        Map<UUID, Product> byId = products.findAllById(ids)
+                .stream().collect(Collectors.toMap(Product::getId, p -> p));
+        return ids.stream().map(byId::get).filter(Objects::nonNull).toList();
+    }
+
+    public List<SimilarProductDto> searchByText(String query, int k) {
+        if (!openAI.isConfigured()) return List.of();
+        float[] q = openAI.embedText(query);
+        List<UUID> ids = embeddings.similar(q, Math.max(1, k));
+        Map<UUID, Product> byId = products.findAllById(ids)
+                .stream().collect(Collectors.toMap(Product::getId, p -> p));
+
+        // You can compute a faux score here if desired. For now, 0.0 placeholder.
+        return ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .map(p -> new SimilarProductDto(
+                        p.getId(),
+                        Optional.ofNullable(p.getTitleNormalized()).orElse(p.getTitleRaw()),
+                        p.getBrand(),
+                        p.getCategory(),
+                        p.getImageUrl(),
+                        0.0
+                ))
+                .toList();
+    }
 }
