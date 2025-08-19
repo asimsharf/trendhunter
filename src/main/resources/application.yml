@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/trendhunter
+    username: admin
+    password: admin123
+  jpa:
+    hibernate:
+      ddl-auto: validate   # do not auto-create/alter tables while we baseline
+    show-sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: public
+    schemas: public
+    baseline-on-migrate: true
+    baseline-version: 0
+
+
+security:
+  user:
+    name: admin
+    password: admin123
+
+openai:
+  api-key: ${OPENAI_API_KEY:}   # reads env var if set, otherwise empty
